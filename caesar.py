@@ -1,10 +1,8 @@
 # Written by Alexander Olson
-# Draft: 2
 
 def caesar():
-	clear = "If he had anything confidential to say, he wrote it in cipher, that is, by so changing the order of the " \
-	        "letters of the alphabet, that not a word could be made out. "
-	shift = 12
+	clear = input("Please enter clear text to encrypt: \n")
+	shift = int(input("Please enter amount to shift: \n"))
 
 	# Using a byte array is a more efficient way to process strings
 	clear_bytes = bytearray(clear.encode())
