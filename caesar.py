@@ -1,5 +1,4 @@
 # Written by Alexander Olson
-# Draft: 2
 
 def caesar():
 	clear = "If he had anything confidential to say, he wrote it in cipher, that is, by so changing the order of the " \
