@@ -2,7 +2,6 @@
 # Draft: 1
 
 def caesar():
-    1 + 1
     clear  = "If he had anything confidential to say, he wrote it in cipher, that is, by so changing the order of the letters of the alphabet, that not a word could be made out."
     cipher = ""
     shift = 12
