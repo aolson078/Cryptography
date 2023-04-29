@@ -13,13 +13,12 @@ def simple_sub():
 
 	cipher_lower, cipher_upper = randomize_ciphers(cipher_lower, cipher_upper)
 
-	for letter in clear:
-		if letter.isupper():
-			cipher += cipher_upper[letter]
-		elif letter.islower():
-			cipher += cipher_lower[letter]
-		else:
-			cipher += letter
+	# Creates translation tables out of the dicts
+	trans_lower = str.maketrans(cipher_lower)
+	trans_upper = str.maketrans(cipher_upper)
+
+	# Uses translation tables to encode clear text into cipher text
+	cipher = clear.translate(trans_lower).translate(trans_upper)
 
 	return "Cipher code: " + cipher + " \nKeys: \n" + str(cipher_lower) + " \n" + str(cipher_upper)
 
