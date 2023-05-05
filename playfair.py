@@ -1,21 +1,22 @@
 # Written by Alexander Olson
 
 import random
+from collections import OrderedDict
 
 
 def playfair():
-	clear = input("Please enter clear text to encrypt: \n")
+	clear = input("Please enter clear text to encrypt: \n").upper()
 	cipher = ""
 
 	# If length of clear text is odd, insert filler letter 'X'
-	if len(clear) % 2 == 0:
+	if len(clear) % 2 == 1:
 		i = random.choice(range(len(clear)))
 		clear = "".join((clear[:i], 'X', clear[i:]))
 
 	# Divide the plaintext message into pairs of letters (digraphs).
 
 	digraphs_clear = [clear[i:i + 2] for i in range(0, len(clear), 2)]
-	print(digraphs_clear)
+
 	# Preparing the key square: Choose a keyword or phrase and remove duplicate letters. Fill the 5x5 grid with the
 	# unique letters from the keyword, followed by the remaining letters of the alphabet (excluding 'Q').
 
@@ -24,27 +25,46 @@ def playfair():
 		print("Keyword too long \n")
 		keyword = input("Please input keyword. 25 characters max \n")
 
-	# TODO remove duplicate letters in keyword!!!
+	keyword = ''.join(OrderedDict.fromkeys(keyword).keys()).upper()
+	print(keyword)
 
 	# 5x5 grid containing the keyword first, then the rest of the alphabet, excluding keyword letters and 'Q'
 
 	cipher_grid = [[] for _ in range(5)]
 
+	inserted_letters = set()
+	keyword_index = 0
+
+	cipher_grid = [[] for _ in range(5)]
+
+	inserted_letters = set(keyword)
+	remaining_letters = [chr(i) for i in range(90, 64, -1)]
+	remaining_letters.remove('Q')
+	for letter in inserted_letters:
+		if letter in remaining_letters:
+			remaining_letters.remove(letter)
+
 	for i in range(5):
-		while len(cipher_grid[i]) < 5 and len(keyword) > 0:
-			cipher_grid[i].append(keyword[0])
-			keyword = keyword[1:]
-		offset = len(cipher_grid[i])
-		for j in range(offset, 5):
-			if len(cipher_grid[i]) != 5:
-				ascii_value = ((i * 5) + j) + 65
-				if ascii_value >= 81:
-					ascii_value += 1
-				cipher_grid[i].append(chr(ascii_value))
+		while len(cipher_grid[i]) < 5 and keyword:
 
-	for inner_list in cipher_grid:
-		print(inner_list)
+			letter = keyword[0]
+			cipher_grid[i].append(letter)
+			if letter not in inserted_letters:
+				inserted_letters.add(letter)
+				cipher_grid[i].append(letter)
+				keyword = keyword[1:]
+			else:
+				keyword = keyword[1:]
 
+		while len(cipher_grid[i]) < 5:
+			letter = remaining_letters.pop()
+			cipher_grid[i].append(letter)
+			inserted_letters.add(letter)
+
+	for row in cipher_grid:
+		print(row)
+
+	print(print(digraphs_clear))
 	# Encrypting the message: For each pair of letters in the plaintext, apply one of the following rules,
 	# based on their positions in the key square:
 
