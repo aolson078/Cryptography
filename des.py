@@ -58,6 +58,29 @@ def perm_two(binary):
 	return parity_string
 
 
+# This permutation takes the rl16 binary string and produces the final permutation
+def final_perm(binary):
+	permutation_table = [40, 8, 48, 16, 56, 24, 64, 32,
+	                     39, 7, 47, 15, 55, 23, 63, 31,
+	                     38, 6, 46, 14, 54, 22, 62, 30,
+	                     37, 5, 45, 13, 53, 21, 61, 29,
+	                     36, 4, 44, 12, 52, 20, 60, 28,
+	                     35, 3, 43, 11, 51, 19, 59, 27,
+	                     34, 2, 42, 10, 50, 18, 58, 26,
+	                     33, 1, 41, 9, 49, 17, 57, 25, ]
+
+	permutation_bin = ['0' for _ in range(64)]
+
+	for i, b in enumerate(permutation_table):
+		permutation_bin[i] = binary[b - 1]
+
+	permutation_bin = permutation_bin[0:64]
+
+	final_string = ''.join([str(b) for b in permutation_bin])
+
+	return final_string
+
+
 # Uses E bit-selection table to extend r
 def expand_r(r):
 	e_table = [32, 1, 2, 3, 4, 5,
@@ -184,10 +207,27 @@ def f(r, key):
 	                                 r_xor[36:42], r_xor[42:48]
 
 	b_list = [b0, b1, b2, b3, b4, b5, b6, b7]
-	sbox(b_list)
+	four_bits = sbox(b_list)
 
+	binary_string = ""
+	for i in range(len(four_bits)):
+		binary_string += four_bits[i]
 
-# permutation
+	permutation_table = [16, 7, 20, 21,
+	                     29, 12, 28, 17,
+	                     1, 15, 23, 26,
+	                     5, 18, 31, 10,
+	                     2, 8, 24, 14,
+	                     32, 27, 3, 9,
+	                     19, 13, 30, 6,
+	                     22, 11, 4, 25]
+	permutation_bin = ""
+
+	# Reorder key with permutation table
+	for i, b in enumerate(permutation_table):
+		permutation_bin += binary_string[b - 1]
+	return permutation_bin
+
 
 # sbox takes 8 6 bit binary strings and reduces them into 4 bit binary strings
 def sbox(bin_list):
@@ -267,28 +307,83 @@ def decimal_to_binary(decimal):
 	return binary_string
 
 
-def main():
-	# Convert hexadecimal clear text to binary
-	clear_text = f'{0x0123456789ABCDEF:0>64b}'
-	keys = generate_keys(b"0001001100110100010101110111100110011011101111001101111111110001")
-	initial_permutation = init_perm(clear_text)
+def binary_to_hex(binary_string):
+	# Pad the binary with 0s to make multiple of 4
+	binary_string = binary_string.zfill(len(binary_string) + (4 - len(binary_string) % 4) % 4)
 
+	# Create a dictionary to map binary values to their corresponding hex values
+	hex_map = {
+		"0000": "0", "0001": "1", "0010": "2", "0011": "3",
+		"0100": "4", "0101": "5", "0110": "6", "0111": "7",
+		"1000": "8", "1001": "9", "1010": "A", "1011": "B",
+		"1100": "C", "1101": "D", "1110": "E", "1111": "F"
+	}
+
+	hex_string = ""
+	for i in range(0, len(binary_string), 4):
+		# Get the 4-bit binary substring
+		binary_substring = binary_string[i:i + 4]
+		hex_string += hex_map[binary_substring]
+
+	return hex_string
+
+
+def encrypt(clear_text, key):
+	keys = generate_keys(key)
+	initial_permutation = init_perm(clear_text)
 	# Split key in 2
 	l0 = initial_permutation[:len(initial_permutation) // 2:]
 	r0 = initial_permutation[(len(initial_permutation) // 2):]
 
-	# We now proceed through 16 iterations, for 1 <= n <= 16, using a function f which operates on two blocks--a data
-	# block of 32 bits and a key Kn of 48 bits--to produce a block of 32 bits.Let + denote XOR addition, (bit-by-bit
-	# addition modulo 2).Then for n going from 1 to 16 we calculate
-	#
-	# Ln = Rn - 1
-	# Rn = Ln - 1 + f(Rn - 1, Kn)
-
 	l1 = r0
-	# r1 = l0 ^ (keys[1] ^ (expand_r(r0))
+	r1 = xor(l0, f(r0, keys[0]))
+	l2 = r1
+	r2 = xor(l1, f(r1, keys[1]))
+	l3 = r2
+	r3 = xor(l2, f(r2, keys[2]))
+	l4 = r3
+	r4 = xor(l3, f(r3, keys[3]))
+	l5 = r4
+	r5 = xor(l4, f(r4, keys[4]))
+	l6 = r5
+	r6 = xor(l5, f(r5, keys[5]))
+	l7 = r6
+	r7 = xor(l6, f(r6, keys[6]))
+	l8 = r7
+	r8 = xor(l7, f(r7, keys[7]))
+	l9 = r8
+	r9 = xor(l8, f(r8, keys[8]))
+	l10 = r9
+	r10 = xor(l9, f(r9, keys[9]))
+	l11 = r10
+	r11 = xor(l10, f(r10, keys[10]))
+	l12 = r11
+	r12 = xor(l11, f(r11, keys[11]))
+	l13 = r12
+	r13 = xor(l12, f(r12, keys[12]))
+	l14 = r13
+	r14 = xor(l13, f(r13, keys[13]))
+	l15 = r14
+	r15 = xor(l14, f(r14, keys[14]))
+	l16 = r15
+	r16 = xor(l15, f(r15, keys[15]))
 
-	f(r0, keys[0])
-	return
+	rl16 = r16 + l16
+	ip = final_perm(rl16)
+
+	return binary_to_hex(ip)
+
+
+def main():
+	# TODO still need to write decrypt function, ECB/CFB mode, and Triple-DES
+
+	# Convert hexadecimal clear text to binary
+	clear_text = f'{0x0123456789ABCDEF:0>64b}'
+	key = b"0001001100110100010101110111100110011011101111001101111111110001"
+	cipher = encrypt(clear_text, key)
+	print(f"Ciphertext: {cipher}")
+
+	return cipher
 
 
 main()
