@@ -56,15 +56,9 @@ def sbox(state):
 		for j in range(4):
 			if len(output_state[i][j]) == 3:
 				sub = output_state[i][j][2]
-				print(sub)
+
 				output_state[i][j] = '0x0'
 				output_state[i][j] += sub
-
-
-				# output_state[i][j][3] = 0
-				# output_state[i][j][4] = sub
-
-				print("!!!!")
 
 	return output_state
 
@@ -85,20 +79,26 @@ def round_layers(state):
 
 # Performs Byte Substitution, ShiftRow, and KeyAddition layers
 def last_round(state):
-	pass
+	return state
 
 
+# Takes state, and shifts left second row once, third row twice, fourth row 3 times
 def shift_rows(state):
-	"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! START HERE NEXT TIME"
-	output = state[0:16], state[16:32], state[32:48], state[48:64]
+	col0 = [state[0][0], state[1][1], state[2][2], state[3][3]]
+	col1 = [state[1][0], state[2][1], state[3][2], state[0][3]]
+	col2 = [state[2][0], state[3][1], state[0][2], state[1][3]]
+	col3 = [state[3][0], state[0][1], state[1][2], state[2][3]]
+	output = [col0, col1, col2, col3]
+	print(output)
+	return output
 
 
 def mix_column(state):
-	pass
+	return state
 
 
 def key_addition(state):
-	pass
+	return state
 
 
 def main():
@@ -109,13 +109,17 @@ def main():
 
 	# Initial key addition
 
+	# Sbox
+	state = sbox(state)
+
 	# for _ in range(9):
 	# 	round_layers(state)
 
-	for _ in range(1):
-		round_layers(state)
+	print(state)
 
-	last_round(state)
+	shift_rows(state)
+
+	# last_round(state)
 
 	# Key will be 128 bits for AES-128
 	key = b"0001001100110100010101110111100110011011101111001101111111110001" \
