@@ -1,30 +1,13 @@
-# Takes clear text in hex and creates a list of strings of individual binary values
-def create_initial_state(clear_text):
-    state = [['0x00', '0x01', '0x02', '0x03'],
+"""initialize_state takes clear text in creates a 2d list of strings of individual hex values"""
+def initialize_state(clear_text):
+    return [['0x00', '0x01', '0x02', '0x03'],
              ['0x04', '0x05', '0x06', '0x07'],
              ['0x08', '0x09', '0x0A', '0x0B'],
              ['0x0C', '0x0D', '0x0E', '0x0F']]
 
-    # ISNT PRODUCING RIGHT STATE MATRIX
-    # state = [[0x00] * 4 for _ in range(4)]
-    # counter = 0
-    #
-    # for i in range(4):
-    # 	for j in range(4):
-    # 		if counter < len(clear_text):
-    # 			hex_value = clear_text[counter:counter + 2]
-    #
-    # 			byte_value = int(hex_value, 16)
-    # 			print(byte_value, hex_value)
-    # 			state[i][j] = hex_value
-    # 			counter += 2
-    #
-    # print(state)
 
-    return state
-
-
-# Performs a byte substitution on the current state using an sbox lookup table.
+"""sbox performs a byte substitution on the current state using the sbox lookup table specified in the AES algorithm.
+https://en.wikipedia.org/wiki/Rijndael_S-box"""
 def sbox(state):
     print("Input state:  ", state)
 
@@ -56,25 +39,27 @@ def sbox(state):
         for j in range(4):
             if len(output_state[i][j]) == 3:
                 sub = output_state[i][j][2]
-
                 output_state[i][j] = '0x0'
                 output_state[i][j] += sub
 
     return output_state
 
 
-# Performs Byte Substitution, ShiftRow, MixColum, and KeyAddition layers for all rounds but the final round
+"""round_layers performs Byte Substitution, ShiftRow, MixColum, and KeyAddition layers for all rounds but the final round.
+Takes current state as 2d list, outputs updated current state as 2d list."""
 def round_layers(state):
     # Key Addition Layer
 
     # Byte Substitution layer
     state = sbox(state)
-
+    # Shift first
     state = shift_rows(state)
 
-    mix_columns(state)
+    state = mix_columns(state)
 
-    key_addition(state)
+    state = key_addition(state)
+
+    return state
 
 
 # Performs Byte Substitution, ShiftRow, and KeyAddition layers
@@ -82,30 +67,31 @@ def last_round(state):
     return state
 
 
-# Takes state, and shifts left second row once, third row twice, fourth row 3 times
+"""shift_rows takes state as a 2d list, and shifts left second row once, third row twice, fourth row 3 times, 
+outputs the new current state as a 2d list """
 def shift_rows(state):
     col0 = [state[0][0], state[1][1], state[2][2], state[3][3]]
     col1 = [state[1][0], state[2][1], state[3][2], state[0][3]]
     col2 = [state[2][0], state[3][1], state[0][2], state[1][3]]
     col3 = [state[3][0], state[0][1], state[1][2], state[2][3]]
     output = [col0, col1, col2, col3]
-    print("After shift_rows: ", output)
     return output
 
 
-
+"""mix_columns takes the current state as input as a 2d list, calling mix_column with each list. Outputs the 
+new current state as a 2d list. """
 def mix_columns(state):
-    # Compute the output state by applying the mix_column function to each column
     new_state = [[],[],[],[]]
     for i in range(4):
         new_state[i] = mix_column(state[i])
-    print(new_state)
-
+    print("new state after mix column: ", new_state)
     return state
 
+
+"""mix_column takes a list of integers as an input, and performs galois multiplication on each item according to the 
+table specified in the AES algorithm. Outputs new mixed column as a list of integers"""
 def mix_column(column):
     # Compute the output column elements using the Galois multiplication and XOR
-    print("Applying Galois multiplication to r0, input: 0x63, expected output:C6")
 
     r00 = galois_mult(column[0], 2)
     r01 = galois_mult(column[1], 3)
@@ -135,62 +121,26 @@ def mix_column(column):
 
     r3 = (r30 ^ r31 ^ r32 ^ r33)  # r1 is the second value of the column
 
-    print(r0, r1, r2, r3)
-
     return [r0, r1, r2, r3]
-
-# DELETE
-    # print(column)
-    # r0 = (
-    #     galois_mult(column[0], 2)
-    #     ^ galois_mult(column[1], 3)
-    #     ^ column[2]
-    #     ^ column[3]
-    # )
-    # r1 = (
-    #     column[0]
-    #     ^ galois_mult(column[1], 2)
-    #     ^ galois_mult(column[2], 3)
-    #     ^ column[3]
-    # )
-    # r2 = (
-    #     column[0]
-    #     ^ column[1]
-    #     ^ galois_mult(column[2], 2)
-    #     ^ galois_mult(column[3], 3)
-    # )
-    # r3 = (
-    #     galois_mult(column[0], 3)
-    #     ^ column[1]
-    #     ^ column[2]
-    #     ^ galois_mult(column[3], 2)
-    # )
-    # return [r0, r1, r2, r3]
 
 # Performs Galois field multiplication, GF(2^8)
 def galois_mult(num, multiplier):
     # Perform the Galois multiplication
-    print("!!!!!!!!!!!!!!!!!!!!!!!!")
     temp = multiplier
     result = 0
-
     while multiplier:
-        print("num: ", num)
         num1 = num
         num1 = int(num1, 16)
-        print("num1: ", num1)
         if multiplier & 1:
             result ^= num1
-            print("result: ", result)
         num1 <<= 1
-        print("num1: ", num1)
         if num1 & 0x100:
             num1 ^= 0x11b
         multiplier >>= 1
         result = num1
     if temp == 3:
         return result ^ int(num, 16)
-    return result & 0xFF
+    return result
 
 
 def key_addition(state):
@@ -198,10 +148,9 @@ def key_addition(state):
 
 
 def main():
-    # Convert hexadecimal clear text to binary
+    # Take user input for clear text
     clear_text = '0123456789ABCDEF'
-
-    state = create_initial_state(clear_text)
+    state = initialize_state(clear_text)
 
     # Initial key addition
 
@@ -217,9 +166,6 @@ def main():
           b"0001001100110100010101110111100110011011101111001101111111110001"
 
     cipher = ''  # encrypt(clear_text, key)
-
-    # print(galois_mult('1'))
-
     return cipher
 
 
