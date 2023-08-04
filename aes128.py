@@ -93,53 +93,58 @@ table specified in the AES algorithm. Outputs new mixed column as a list of inte
 def mix_column(column):
     # Compute the output column elements using the Galois multiplication and XOR
 
-    r00 = galois_mult(column[0], 2)
-    r01 = galois_mult(column[1], 3)
+    r00 = galois_mult(int(column[0], 16), 2)
+    r01 = galois_mult(int(column[1], 16), 3)
     r02 = int(column[2], 16)
     r03 = int(column[3], 16)
 
     r0 = (r00 ^ r01 ^ r02 ^ r03) # r0 is the first value of the column
 
     r10 = int(column[0], 16)
-    r11 = galois_mult(column[1], 2)
-    r12 = galois_mult(column[2], 3)
+    r11 = galois_mult(int(column[1], 16), 2)
+    r12 = galois_mult(int(column[2], 16), 3)
     r13 = int(column[3], 16)
 
     r1 = (r10 ^ r11 ^ r12 ^ r13)  # r1 is the second value of the column
 
     r20 = int(column[0], 16)
     r21 = int(column[1], 16)
-    r22 = galois_mult(column[2], 2)
-    r23 = galois_mult(column[3], 3)
+    r22 = galois_mult(int(column[2], 16), 2)
+    r23 = galois_mult(int(column[3], 16), 3)
 
     r2 = (r20 ^ r21 ^ r22 ^ r23)  # r1 is the second value of the column
 
-    r30 = galois_mult(column[0], 3)
+    r30 = galois_mult(int(column[0], 16), 3)
     r31 = int(column[1], 16)
     r32 = int(column[2], 16)
-    r33 = galois_mult(column[3], 2)
+    r33 = galois_mult(int(column[3], 16), 2)
 
     r3 = (r30 ^ r31 ^ r32 ^ r33)  # r1 is the second value of the column
 
     return [r0, r1, r2, r3]
 
-# Performs Galois field multiplication, GF(2^8)
+"""galois_mult takes 2 integers as input, num and multiplier, and performs Galois field multiplication on num by multiplier
+in GF(2^8). Outputs result as an integer"""
 def galois_mult(num, multiplier):
     # Perform the Galois multiplication
-    temp = multiplier
+    temp_mul = multiplier
     result = 0
     while multiplier:
-        num1 = num
-        num1 = int(num1, 16)
+        temp_num = num
+        # check if LSB is 1
         if multiplier & 1:
-            result ^= num1
-        num1 <<= 1
-        if num1 & 0x100:
-            num1 ^= 0x11b
+            # XOR
+            result ^= temp_num
+        # multiply by two (equal to left shift)
+        temp_num <<= 1
+        # if temp_num is over 255, reduce bye irreducible polynomial 0x11b
+        if temp_num & 0x100:
+            temp_num ^= 0x11b
+
         multiplier >>= 1
-        result = num1
-    if temp == 3:
-        return result ^ int(num, 16)
+        result = temp_num
+    if temp_mul == 3:
+        return result ^ num
     return result
 
 
