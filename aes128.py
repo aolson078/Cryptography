@@ -52,11 +52,15 @@ def round_layers(state):
 
     # Byte Substitution layer
     state = sbox(state)
-    # Shift first
+    # Shift left second row once, third row twice, fourth row three times
     state = shift_rows(state)
-
+    # Mix columns with galois multiplication specified in AES algorithm
+    print("Before mix")
+    print(state)
     state = mix_columns(state)
-
+    print("After mix")
+    print(state)
+    #
     state = key_addition(state)
 
     return state
@@ -84,15 +88,13 @@ def mix_columns(state):
     new_state = [[],[],[],[]]
     for i in range(4):
         new_state[i] = mix_column(state[i])
-    print("new state after mix column: ", new_state)
-    return state
+    return new_state
 
 
 """mix_column takes a list of integers as an input, and performs galois multiplication on each item according to the 
 table specified in the AES algorithm. Outputs new mixed column as a list of integers"""
 def mix_column(column):
     # Compute the output column elements using the Galois multiplication and XOR
-
     r00 = galois_mult(int(column[0], 16), 2)
     r01 = galois_mult(int(column[1], 16), 3)
     r02 = int(column[2], 16)
@@ -120,7 +122,6 @@ def mix_column(column):
     r33 = galois_mult(int(column[3], 16), 2)
 
     r3 = (r30 ^ r31 ^ r32 ^ r33)  # r1 is the second value of the column
-
     return [r0, r1, r2, r3]
 
 """galois_mult takes 2 integers as input, num and multiplier, and performs Galois field multiplication on num by multiplier
@@ -140,7 +141,6 @@ def galois_mult(num, multiplier):
         # if temp_num is over 255, reduce bye irreducible polynomial 0x11b
         if temp_num & 0x100:
             temp_num ^= 0x11b
-
         multiplier >>= 1
         result = temp_num
     if temp_mul == 3:
@@ -149,6 +149,7 @@ def galois_mult(num, multiplier):
 
 
 def key_addition(state):
+    print(state, "!!!!!!!!!!")
     return state
 
 
