@@ -6,6 +6,29 @@ def initialize_state(clear_text):
              ['0x0C', '0x0D', '0x0E', '0x0F']]
 
 
+def add_round_key(state, key):
+    string = convert_to_string(state)
+    result = int(string,16) ^ int(key[0], 16)
+    hex_string = hex(result)[2:].zfill(32)
+    result = convert_to_matrix(hex_string)
+    return result
+
+
+def convert_to_string(matrix):
+    # Flatten the matrix and remove '0x' from each element
+    hex_values = [value[2:] for sublist in matrix for value in sublist]
+    # Join all hex values into a single string
+    result = ''.join(hex_values)
+    return result
+
+def convert_to_matrix(hex_string):
+    # Split the string into two-character chunks
+    hex_values = [hex_string[i:i+2] for i in range(0, len(hex_string), 2)]
+    # Add '0x' prefix to each element and group them into 4-element sublists
+    matrix = [['0x' + hex_values[i+j] for j in range(4)] for i in range(0, len(hex_values), 4)]
+    return matrix
+
+
 """sbox performs a byte substitution on the current state using the sbox lookup table specified in the AES algorithm.
 https://en.wikipedia.org/wiki/Rijndael_S-box"""
 def sbox(state):
@@ -48,25 +71,17 @@ def sbox(state):
 """round_layers performs Byte Substitution, ShiftRow, MixColum, and KeyAddition layers for all rounds but the final round.
 Takes current state as 2d list, outputs updated current state as 2d list."""
 def round_layers(state):
-    # Key Addition Layer
-
     # Byte Substitution layer
     state = sbox(state)
     # Shift left second row once, third row twice, fourth row three times
     state = shift_rows(state)
     # Mix columns with galois multiplication specified in AES algorithm
-    print("Before mix")
-    print(state)
     state = mix_columns(state)
-    print("After mix")
-    print(state)
-    #
-    state = key_addition(state)
 
     return state
 
 
-# Performs Byte Substitution, ShiftRow, and KeyAddition layers
+"""last_round performs Byte Substitution, ShiftRow, and KeyAddition layers on last round of encryption"""
 def last_round(state):
     return state
 
@@ -124,8 +139,9 @@ def mix_column(column):
     r3 = (r30 ^ r31 ^ r32 ^ r33)  # r1 is the second value of the column
     return [r0, r1, r2, r3]
 
-"""galois_mult takes 2 integers as input, num and multiplier, and performs Galois field multiplication on num by multiplier
-in GF(2^8). Outputs result as an integer"""
+
+"""galois_mult takes 2 integers as input, num and multiplier, and performs Galois field multiplication on num by 
+multiplier in GF(2^8). Outputs result as an integer """
 def galois_mult(num, multiplier):
     # Perform the Galois multiplication
     temp_mul = multiplier
@@ -148,28 +164,55 @@ def galois_mult(num, multiplier):
     return result
 
 
-def key_addition(state):
-    print(state, "!!!!!!!!!!")
-    return state
+def rotate_left(lst):
+    return lst[1:] + lst[:1]
+
+"""generate subkey performs the key addition step and creates an array of 44 32-bit words. 
+Each round uses a subkey made of 4 of these words. The first 4 words are the initial cipher key. 
+Output a list of subkeys"""
+def generate_subkeys(key):
+    subkeys = [[] for _ in range(11)]
+
+    subkeys[0] = key
+    print(subkeys)
+    # AES-128 needs 11 subkeys all together. Other key lengths will require variable number of subkeys
+
+    for i in range(10):
+        # Word rotation: Take the previous 32-bit word, rotate it to the left by one byte.
+
+        subkeys[i + 1] = rotate_left(subkeys[i])
+
+        # Byte substitution
+        # Rcon operation: The first byte of the resulting word is XORed with the round constant (Rcon).
+        # Rcon changes for each round and is predefined in the AES standard
+
+        # Derive the rest of the round key: The next three 4-byte words are derived by XORing
+        # the previously derived word with the 4-byte word that's 4 positions back.
+    print("Subkeys: ", subkeys)
+    return subkeys
 
 
 def main():
     # Take user input for clear text
-    clear_text = '0123456789ABCDEF'
+    clear_text = '000102030405060708090a0b05445436c0d0e0f'
     state = initialize_state(clear_text)
 
+    # Key will be 128 bits for AES-128
+    key = "000102030405060708090a0b0c0d0e0f"
+    keys = generate_subkeys(key)
+
     # Initial key addition
-
-    # for _ in range(9):
+    state = add_round_key(state, keys[0])
+    print("state after add_key :", state)
+    # for i in range(9):
     # 	round_layers(state)
+    #   add_round_key(state, keys[i+1])
 
-    round_layers(state)
+    state = round_layers(state)
 
     # last_round(state)
+    print(state)
 
-    # Key will be 128 bits for AES-128
-    key = b"0001001100110100010101110111100110011011101111001101111111110001" \
-          b"0001001100110100010101110111100110011011101111001101111111110001"
 
     cipher = ''  # encrypt(clear_text, key)
     return cipher
