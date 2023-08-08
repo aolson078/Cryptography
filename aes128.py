@@ -32,7 +32,6 @@ def convert_to_matrix(hex_string):
 """sbox performs a byte substitution on the current state using the sbox lookup table specified in the AES algorithm.
 https://en.wikipedia.org/wiki/Rijndael_S-box"""
 def sbox(state):
-    print("Input state:  ", state)
 
     # Sbox for byte substitution
     sboxes = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -52,21 +51,13 @@ def sbox(state):
               0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
               0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]
 
-    output_state = [[0 for j in range(4)] for i in range(4)]
+    output_state = []
 
     for i in range(4):
         for j in range(4):
-            output_state[i][j] = hex(sboxes[int(state[i][j], 16)])
+            output_state.append("0x" + str(sboxes[int(state[i][j], 16)]))
 
-    for i in range(4):
-        for j in range(4):
-            if len(output_state[i][j]) == 3:
-                sub = output_state[i][j][2]
-                output_state[i][j] = '0x0'
-                output_state[i][j] += sub
-
-    return output_state
-
+    return [output_state[i:i + 4] for i in range(0, len(output_state), 4)]
 
 """round_layers performs Byte Substitution, ShiftRow, MixColum, and KeyAddition layers for all rounds but the final round.
 Takes current state as 2d list, outputs updated current state as 2d list."""
@@ -163,33 +154,68 @@ def galois_mult(num, multiplier):
         return result ^ num
     return result
 
-
-def rotate_left(lst):
-    return lst[1:] + lst[:1]
-
 """generate subkey performs the key addition step and creates an array of 44 32-bit words. 
 Each round uses a subkey made of 4 of these words. The first 4 words are the initial cipher key. 
 Output a list of subkeys"""
 def generate_subkeys(key):
     subkeys = [[] for _ in range(11)]
-
     subkeys[0] = key
-    print(subkeys)
-    # AES-128 needs 11 subkeys all together. Other key lengths will require variable number of subkeys
 
+
+    # 00 04 08 0c
+    # 01 05 09 0d
+    # 02 06 0a 0e
+    # 03 07 0b 0f I NEED TO MAKE IT LIKE THIS
+
+
+
+
+
+    # Round constant, used to xor with each subkey. After it is multiplied by 2. Rcon[1] = 1 Rcon[2] = 2 Rcon[3] = 4
+    rcon = 1
+
+    print("Original key", key)
+
+    # AES-128 needs 11 subkeys all together. Other key lengths will require variable number of subkeys
     for i in range(10):
         # Word rotation: Take the previous 32-bit word, rotate it to the left by one byte.
+        next_key = rotate_word_left(subkeys[i])
 
-        subkeys[i + 1] = rotate_left(subkeys[i])
+        split_subkey = [hex(int(next_key[i:i + 2],  16)) for i in range(0, len(next_key), 2)]
+        temp_output_list = [split_subkey[i:i + 4] for i in range(0, len(split_subkey), 4)]
+        output_list = [[f"{int(element, 16):#04x}" for element in sublist] for sublist in temp_output_list]
 
         # Byte substitution
+        subkey = sbox(output_list)
+        print("subkey: ", subkey)
+        print(hex(125))
+        flat_key = []
+        for row in subkey:
+            for key in row:
+                flat_key.append(key[2:])
+        print("flat subkey: ", flat_key)
+
         # Rcon operation: The first byte of the resulting word is XORed with the round constant (Rcon).
+        flat_key[0] = int(flat_key[0]) ^ rcon
         # Rcon changes for each round and is predefined in the AES standard
+        rcon <<= 1
+        print("flat key: ", flat_key[0])
+        break
+
+
+
+
+
+
 
         # Derive the rest of the round key: The next three 4-byte words are derived by XORing
         # the previously derived word with the 4-byte word that's 4 positions back.
     print("Subkeys: ", subkeys)
     return subkeys
+
+"""rotate word takes a list of 4 bytes, and rotates it to the left by one byte. [0a, 1b, 2c, 3d] -> [ 1b, 2c, 3d, 0a]"""
+def rotate_word_left(subkey):
+    return subkey[2:] + subkey[:2]
 
 
 def main():
@@ -211,8 +237,8 @@ def main():
     state = round_layers(state)
 
     # last_round(state)
-    print(state)
 
+    print(rotate_word_left(key))
 
     cipher = ''  # encrypt(clear_text, key)
     return cipher
