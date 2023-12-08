@@ -1,4 +1,7 @@
-sboxes = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+from collections import deque
+
+# Define RCON and SBOXES arrays
+SBOXES = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
               0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
               0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
               0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
@@ -15,17 +18,8 @@ sboxes = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b
               0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
               0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]
 
+RCON = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
 
-"""initialize_state takes clear text in creates a 2d list of strings of individual hex values"""
-def initialize_state(clear_text):
-    # state = [[0]*4 for _ in range(4)]
-    # for i in range(4):
-    #     for j in range(4):
-    #         state[j][i] = clear_text[i*4 + j]
-    #
-    # print("Initial state: ", state)
-    #return state
-    return clear_text
 
 def add_round_key(state, key):
     result = [[0] * 4 for _ in range(4)]
@@ -53,14 +47,13 @@ def convert_to_matrix(hex_string):
 """sbox performs a byte substitution on the current state using the sbox lookup table specified in the AES algorithm.
 https://en.wikipedia.org/wiki/Rijndael_S-box"""
 def sbox(state):
-    output_state = []
+    output_state = [[0]*4 for _ in range(4)]
 
     for i in range(4):
         for j in range(4):
-            output_state.append(sboxes[int(state[i][j])])
+            output_state[i][j] = SBOXES[int(state[i][j])]
 
-    return [output_state[i:i + 4] for i in range(0, len(output_state), 4)]
-
+    return output_state
 """round_layers performs Byte Substitution, ShiftRow, MixColum, and KeyAddition layers for all rounds but the final round.
 Takes current state as 2d list, outputs updated current state as 2d list."""
 def round_layers(state):
@@ -149,8 +142,7 @@ def galois_mult(num, multiplier):
 Each round uses a subkey made of 4 of these words. The first 4 words are the initial cipher key. 
 Output a list of subkeys"""
 def generate_subkeys(key):
-    # Define the Rcon array
-    rcon = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
+    
 
     # Initialize the expanded key with the cipher key
     expanded_key = []
@@ -162,8 +154,8 @@ def generate_subkeys(key):
         temp = expanded_key[i-1]
         if i % 4 == 0:
             # Perform the key schedule core (rotate, substitute, round constant)
-            temp = [sboxes[temp[(j + 1) % 4]] for j in range(4)]  # Rotate and substitute
-            temp[0] ^= rcon[i//4-1]  # XOR with round constant
+            temp = [SBOXES[temp[(j + 1) % 4]] for j in range(4)]  # Rotate and substitute
+            temp[0] ^= RCON[i//4-1]  # XOR with round constant
         expanded_key.append([expanded_key[i-4][j] ^ temp[j] for j in range(4)])  # XOR with 4 words back
 
     # Group the expanded key into subkeys
@@ -172,4 +164,6 @@ def generate_subkeys(key):
 
 """rotate word takes a list of 4 bytes, and rotates it to the left by one byte. [0a, 1b, 2c, 3d] -> [ 1b, 2c, 3d, 0a]"""
 def rotate_word_left(subkey):
-    return subkey[2:] + subkey[:2]
+    d = deque(subkey)
+    d.rotate(-1)
+    return list(d)
