@@ -189,26 +189,3 @@ def generate_subkeys(key):
 """rotate word takes a list of 4 bytes, and rotates it to the left by one byte. [0a, 1b, 2c, 3d] -> [ 1b, 2c, 3d, 0a]"""
 def rotate_word_left(subkey):
     return subkey[2:] + subkey[:2]
-
-
-def main():
-    # Take user input for clear text
-    clear_text = [[0x0F, 0x0E, 0x0D, 0x0C], [0x0B, 0x0A, 0x09, 0x08], [0x07, 0x06, 0x05, 0x04], [0x03, 0x02, 0x01, 0x00]]
-    state = initialize_state(clear_text)
-
-    # Key will be 128 bits for AES-128
-    key = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F]
-    subkeys = generate_subkeys(key)
-
-    # Initial key addition
-    state = add_round_key(state, subkeys[0])
-
-    for i in range(9):
-        state = add_round_key(round_layers(state), subkeys[i+1])
-
-    state = add_round_key(last_round(state), subkeys[-1])
-
-    return state
-
-
-print(main())
