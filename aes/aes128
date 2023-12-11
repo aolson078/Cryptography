@@ -1,5 +1,6 @@
 from collections import deque
 
+# ----------------------------------------------------------------------------------------------------------------------
 """
 	    Performs Galois field multiplication on two integers in GF(2^8).
 	
@@ -10,6 +11,8 @@ from collections import deque
 	    Returns:
 	    - The result of the Galois field multiplication as an integer.
 """
+
+
 def galois_mult(num, multiplier):
 	# Perform the Galois multiplication
 	temp_mul = multiplier
@@ -32,6 +35,7 @@ def galois_mult(num, multiplier):
 	return result
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 """
         Performs the MixColumn operation on the input column.
 
@@ -41,6 +45,8 @@ def galois_mult(num, multiplier):
         Returns:
         - The new mixed column as a list of integers.
 """
+
+
 def mix_column(column):
 	# Compute the output column elements using the Galois multiplication and XOR
 	r00 = galois_mult(column[0], 2)
@@ -61,6 +67,7 @@ def mix_column(column):
 	return [r0, r1, r2, r3]
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 """
 	        Converts the given matrix to a string.
 
@@ -71,6 +78,8 @@ def mix_column(column):
 	        - The string representation of the input matrix.
 
 """
+
+
 def convert_to_string(matrix):
 	# Flatten the matrix and remove '0x' from each element
 	hex_values = [value[2:] for sublist in matrix for value in sublist]
@@ -79,6 +88,7 @@ def convert_to_string(matrix):
 	return result
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 """
         Rotates the given list of 4 bytes to the left by one byte.
 
@@ -88,12 +98,15 @@ def convert_to_string(matrix):
         Returns:
         - The rotated list of 4 bytes.
 """
+
+
 def rotate_word_left(subkey):
 	d = deque(subkey)
 	d.rotate(-1)
 	return list(d)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 """
             Converts the given hex string to a matrix.
 
@@ -103,6 +116,8 @@ def rotate_word_left(subkey):
             Returns:
             - The matrix representation of the input hex string.
 """
+
+
 def convert_to_matrix(hex_string):
 	# Split the string into two-character chunks
 	hex_values = [hex_string[i:i + 2] for i in range(0, len(hex_string), 2)]
@@ -111,6 +126,8 @@ def convert_to_matrix(hex_string):
 	return matrix
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 class AES:
 	"""
 			Initializes the AES class with the given state.
@@ -123,6 +140,7 @@ class AES:
 			- RCON: The round constant used in the key expansion of AES.
 			- state: The current state of the AES encryption.
 	"""
+
 	def __init__(self, state):
 
 		self.SBOXES = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -146,6 +164,7 @@ class AES:
 
 		self.state = state
 
+	# ------------------------------------------------------------------------------------------------------------------
 	""" 
 			Adds the round key to the current state.
 
@@ -153,6 +172,7 @@ class AES:
 
 	        Returns: The result of adding the round key to the current state as a 4x4 matrix.
 	"""
+
 	def add_round_key(self, key):
 		result = [[0] * 4 for _ in range(4)]
 		for i in range(4):
@@ -160,7 +180,7 @@ class AES:
 				result[i][j] = self.state[i][j] ^ key[i][j]
 		return result
 
-
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
 	        Performs a byte substitution on the current state using the S-box lookup table specified in the AES algorithm
 			https://en.wikipedia.org/wiki/Rijndael_S-box
@@ -168,6 +188,7 @@ class AES:
 	        Returns:
 	        - None (modifies the state in place).
 	"""
+
 	def sbox(self):
 		output_state = []
 
@@ -177,12 +198,14 @@ class AES:
 		print(output_state)
 		self.state = [output_state[i:i + 4] for i in range(0, len(output_state), 4)]
 
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
             Performs Byte Substitution, ShiftRow, MixColumn, and KeyAddition layers for all rounds but the final round.
             
             Returns:
 	        - None (modifies the state in place).
     """
+
 	def round_layers(self):
 		# Byte Substitution layer
 		self.sbox()
@@ -191,16 +214,19 @@ class AES:
 		# Mix columns with galois multiplication specified in AES algorithm
 		self.mix_columns()
 
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
             Performs Byte Substitution and ShiftRow layers on the last round of encryption.
             
             Returns:
 	        - None (modifies the state in place).
     """
+
 	def last_round(self):
 		self.sbox()
 		self.shift_rows()
 
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
 	       Shifts the current state as a 2D list, where the second row is shifted once, the third row is shifted twice,
 	       and the fourth row is shifted three times.
@@ -208,6 +234,7 @@ class AES:
 	       Returns:
 	        - None (modifies the state in place).
 	"""
+
 	def shift_rows(self):
 		col0 = [self.state[0][0], self.state[1][1], self.state[2][2], self.state[3][3]]
 		col1 = [self.state[1][0], self.state[2][1], self.state[3][2], self.state[0][3]]
@@ -215,18 +242,21 @@ class AES:
 		col3 = [self.state[3][0], self.state[0][1], self.state[1][2], self.state[2][3]]
 		self.state = [col0, col1, col2, col3]
 
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
 	        Performs the mix_column operation on each column of the current state.
 	        
 	        Returns:
 	        - None (modifies the state in place).
 	"""
+
 	def mix_columns(self):
 		new_state = [[], [], [], []]
 		for i in range(4):
 			new_state[i] = mix_column(self.state[i])
 		self.state = new_state
 
+	# ------------------------------------------------------------------------------------------------------------------
 	"""
 	        Generates subkeys using the key expansion process of the AES algorithm.
 
@@ -236,6 +266,7 @@ class AES:
 	        Returns:
 	        - The subkeys as a list of 4x4 matrices.
 	"""
+
 	def generate_subkeys(self, key):
 		# Initialize the expanded key with the cipher key
 		expanded_key = []
@@ -255,3 +286,6 @@ class AES:
 		subkeys = [expanded_key[i * 4:i * 4 + 4] for i in range(11)]
 		return subkeys
 
+# ------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------
+# WRITE DECRYPT!
