@@ -146,9 +146,8 @@ class AES:
 
 		self.state = state
 
-
 	""" 
-		Adds the round key to the current state.
+			Adds the round key to the current state.
 
 	        Args: key: The round key as a 4x4 matrix.
 
@@ -164,7 +163,7 @@ class AES:
 
 	"""
 	        Performs a byte substitution on the current state using the S-box lookup table specified in the AES algorithm
-		https://en.wikipedia.org/wiki/Rijndael_S-box
+			https://en.wikipedia.org/wiki/Rijndael_S-box
 			
 	        Returns:
 	        - None (modifies the state in place).
@@ -178,14 +177,12 @@ class AES:
 		print(output_state)
 		self.state = [output_state[i:i + 4] for i in range(0, len(output_state), 4)]
 
-
-
 	"""
             Performs Byte Substitution, ShiftRow, MixColumn, and KeyAddition layers for all rounds but the final round.
             
             Returns:
 	        - None (modifies the state in place).
-    	"""
+    """
 	def round_layers(self):
 		# Byte Substitution layer
 		self.sbox()
@@ -194,13 +191,12 @@ class AES:
 		# Mix columns with galois multiplication specified in AES algorithm
 		self.mix_columns()
 
-
 	"""
             Performs Byte Substitution and ShiftRow layers on the last round of encryption.
             
             Returns:
 	        - None (modifies the state in place).
-    	"""
+    """
 	def last_round(self):
 		self.sbox()
 		self.shift_rows()
@@ -219,7 +215,6 @@ class AES:
 		col3 = [self.state[3][0], self.state[0][1], self.state[1][2], self.state[2][3]]
 		self.state = [col0, col1, col2, col3]
 
-
 	"""
 	        Performs the mix_column operation on each column of the current state.
 	        
@@ -231,7 +226,6 @@ class AES:
 		for i in range(4):
 			new_state[i] = mix_column(self.state[i])
 		self.state = new_state
-
 
 	"""
 	        Generates subkeys using the key expansion process of the AES algorithm.
