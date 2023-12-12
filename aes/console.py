@@ -13,7 +13,8 @@ def main():
 	               + "1: Run AES128\n"
 	               + "2: Exit Program\n"), style="info")
 
-	choice = int(input())
+	#choice = int(input())
+	choice = 1
 	print()
 
 	if choice == 1:
@@ -27,9 +28,16 @@ def main():
 		aes.state = aes.add_round_key(subkeys[0])
 
 		for i in range(9):
-			aes.round_layers()
+			# Byte Substitution layer
+			aes.sbox()
+			# Shift left second row once, third row twice, fourth row three times
+			aes.shift_rows()
+			# Mix columns with galois multiplication specified in AES algorithm
+			aes.mix_columns()
 			aes.state = aes.add_round_key(subkeys[i + 1])
-		aes.last_round()
+
+		aes.sbox()
+		aes.shift_rows()
 		aes.state = aes.add_round_key(subkeys[-1])
 		return aes.state
 
