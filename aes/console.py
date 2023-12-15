@@ -13,7 +13,8 @@ def main():
 	               + "1: Run AES128\n"
 	               + "2: Exit Program\n"), style="info")
 
-	choice = int(input())
+	# choice = int(input())
+	choice = 1
 
 	print()
 
@@ -34,11 +35,17 @@ def main():
 			aes.shift_rows()
 			# Mix columns with galois multiplication specified in AES algorithm
 			aes.mix_columns()
+			# aes.inv_mix_columns()
+
 			aes.state = aes.add_round_key(subkeys[i + 1])
 
+		# replaces each byte in state with a corresponding byte from a nonlinear substitution table (S-box).
+		# This step introduces non-linearity into the encryption process
 		aes.sbox()
 		aes.shift_rows()
 		aes.state = aes.add_round_key(subkeys[-1])
+
+
 		return aes.state
 
 	elif choice == 2:
