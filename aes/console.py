@@ -12,6 +12,19 @@ console = Console(theme=custom_theme)
 KEY = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]
 
 
+# Function takes 2d list (of size 1) as input and outputs string of hex values
+def to_hex(string):
+	output = ""
+	for i in string:
+		for j in i:
+			if len(hex(j)[2::]) == 1:
+				output += "0"
+				output += (hex(j)[2::])
+			else:
+				output += (hex(j)[2::])
+	return output
+
+
 # Encrypt takes plaintext input as a length 4 2d list with 4 bytes each
 def encrypt(plaintext):
 	flat_plaintext = [item for row in plaintext for item in row]
@@ -82,8 +95,6 @@ def output_hex(cipher):
 	for i in cipher:
 		for j in i:
 			output.append(hex(j)[2:])
-
-	print(output)
 	return output
 
 
@@ -103,39 +114,25 @@ def format_input(string):
 		output[3].append(ord(string[i]))
 	return output
 
-
 def main():
-
-	console.print(("Please choose from the following menu: \n"
+	Console.print(("Please choose from the following menu: \n"
 	               + "1: Run AES128 Encryption\n"
 	               + "2: Run AES128 Decryption\n"
 	               + "3: Exit Program\n"), style="info")
 
-	# choice = int(input())
-	choice = 2
+	choice = int(input())
 
 	if choice == 1:
-		# plaintext = format_input(input("Please enter a 16 byte plaintext as string to encrypt: "))
-		plaintext = format_input("ALEXOLSONISJUST1")
-		print(plaintext)
-		print(output_hex(plaintext))
-		encrypt(plaintext)
-
+		print("!!!!!!!!!!")
+		plaintext = console.format_input(input("Please enter a 16 byte plaintext as string to encrypt: "))
+		console.encrypt(plaintext)
 
 	if choice == 2:
-		#plaintext = input("Please enter ciphertext to decrypt: ")
-		plaintext = format_input("ALEXOLSONISJUST1")
-		print(plaintext)
-		output_hex(plaintext)
-		cipher = encrypt(plaintext)
-		output_hex(cipher)
-		decrypt(encrypt(plaintext))
+		plaintext = input("Please enter ciphertext to decrypt: ")
+		encrypted = console.encrypt(plaintext)
+		print(to_hex(encrypted))
+		print(to_hex(console.decrypt(encrypted)))
 
 
 	elif choice == 3:
 		exit()
-
-
-main()
-
-
