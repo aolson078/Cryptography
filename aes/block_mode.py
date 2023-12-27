@@ -17,30 +17,9 @@ def to_hex(string):
 				output += (hex(j)[2::])
 	return output
 
-# ECB block cipher mode. enc=True to encrypt, enc=False to decrypt
-def ecb(plaintext, key, enc=True):
-	# Calculate number of blocks needed
-	num_blocks = ceil(len(plaintext) / 16)
-	num_padding = 16 - len(plaintext) % 16
 
-	# Add padding (pad with same value as number of padding bytes)
-	blocks = []
-	for i in range(num_blocks):
-		blocks.append([])
-	print("Blocks:")
-	plaintext = [item for row in plaintext for item in row]
-	for block in blocks:
-		while len(block) < 16 and plaintext:
-			# Appends each letters ordinal ascii value
-			block.append(plaintext[0])
-			plaintext = plaintext[1:]
-
-
-	# Pad blocks with Ansi X9.23 padding (Pad will all 0s then w/ num_padding in last position
-	while len(blocks[-1]) < 16:
-		blocks[-1].append(0)  # Pad with 0s
-		blocks[-1][-1] = num_padding
-
+# ECB block cipher mode. enc=True to encrypt, enc=False to decrypt. Takes list of blocks and key as input
+def ecb(blocks, key, enc=True):
 	# 2D list to hold all encrypted blocks
 	full_output = []
 	# Run aes128 on each block
@@ -58,6 +37,5 @@ def ecb(plaintext, key, enc=True):
 		full_output.append(cipher_hex_output)
 
 	# Return final value
-	print(full_output[0])
-	return full_output[0]
-
+	print(full_output)
+	return full_output
