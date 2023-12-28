@@ -1,7 +1,7 @@
 # DO NOT USE FOR ACTUAL SECURITY/PRODUCTION, NOT CRYPTOGRAPHICALLY SECURE!!!!!!!!!!!!!!!!
 # Written by Alex Olson
 # This file contains the block modes of operation to run aes128
-from math import ceil
+
 from encrypt import encrypt, decrypt
 
 
@@ -20,21 +20,10 @@ def to_hex(string):
 
 # ECB block cipher mode. enc=True to encrypt, enc=False to decrypt. Takes list of blocks and key as input
 def ecb(blocks, key, enc=True):
-	# 2D list to hold all encrypted blocks
-	full_output = []
+	# Blocks is 2D list that holds all encrypted blocks to process
 	# Run aes128 on each block
-	for block in blocks:
-		text = [block[:4], block[4:8], block[8:12], block[12:16]]
-		output = ""
-		if enc:
-			cipher = encrypt(text, key)
-		else:
-			cipher = decrypt(text, key)
-		# for i in cipher:
-		# 	for j in i:
-		# 		output += (chr(j))
-		cipher_hex_output = to_hex(cipher)
-		full_output.append(cipher_hex_output)
+	full_output = [to_hex(encrypt([block[i:i + 4] for i in range(0, 16, 4)], key)) if enc
+	               else to_hex(decrypt([block[i:i + 4] for i in range(0, 16, 4)], key)) for block in blocks]
 
 	# Return final value
 	print(full_output)
