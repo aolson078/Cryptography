@@ -6,7 +6,7 @@ def gmult(a, b):
 	for _ in range(8):
 		if b & 1:
 			p ^= a
-		hi_bit_set = a & 0x80
+		hi_bit_set = a & 0x80 # Check if the high bit is set
 		a <<= 1
 		if hi_bit_set:
 			a ^= 0x1B

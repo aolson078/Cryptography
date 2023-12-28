@@ -12,8 +12,7 @@ def encrypt(plaintext, key):
 
 	subkeys = aes.generate_subkeys(key)  # Generate subkeys for each round from original key
 
-	# Initial key addition
-	aes.state = aes.add_round_key(subkeys[0])
+	aes.state = aes.add_round_key(subkeys[0]) # Initial key addition
 
 	for i in range(9):
 		aes.sbox()  # replaces each byte in state with a corresponding byte from a nonlinear substitution table (S-box).
@@ -22,7 +21,7 @@ def encrypt(plaintext, key):
 
 		aes.state = aes.add_round_key(subkeys[i + 1]) # Add the round key for the current round to the state
 
-	aes.sbox()
+	aes.sbox()  # replaces each byte in state with a corresponding byte from a nonlinear substitution table (S-box).
 	aes.shift_rows()
 	aes.state = aes.add_round_key(subkeys[-1])
 
@@ -33,7 +32,7 @@ def decrypt(ciphertext, key):
 	aes = AES(ciphertext)   # Initialize the AES object with the ciphertext
 
 	subkeys = aes.generate_subkeys(key)  # Generate subkeys for each round from original key
-	aes.state = aes.add_round_key(subkeys[-1])
+	aes.state = aes.add_round_key(subkeys[-1]) # Add the last round key to the state
 	aes.inv_shift_rows()
 	aes.inv_sbox()
 
