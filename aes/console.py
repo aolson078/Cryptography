@@ -62,6 +62,9 @@ class Console:
 
 		menu_choice = int(input())
 
+		if menu_choice == 3:
+			exit()
+
 		if self.input == "":
 			self.change_input()  # Prompts user for input if none is provided
 
@@ -74,13 +77,10 @@ class Console:
 			if block_mode_choice == 1:
 				self.output = ecb(self.cipher_blocks, self.encryption_key)
 
-		if menu_choice == 2:
+		elif menu_choice == 2:
 			block_mode_choice = int(input("Which block mode would you like to use? \n " + " 1: ECB Mode "))
 			if block_mode_choice == 1:
 				self.output = ecb(self.cipher_blocks, self.encryption_key, enc=False)
-
-		elif menu_choice == 3:
-			exit()
 
 
 if __name__ == "__main__":
