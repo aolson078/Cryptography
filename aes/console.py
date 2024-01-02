@@ -2,8 +2,8 @@
 # Written by Alex Olson
 
 import ast  # Provides function to parse string to produce list object
-from block_mode import ecb
-from rich.console import Console as RC
+from block_mode import ecb, cbc
+from rich.console import Console as rc
 from rich import inspect
 
 
@@ -53,7 +53,7 @@ class Console:
 				-1] = num_padding  # Last char of the block is replaced with the number of padding chars
 
 	def run(self):
-		rich_console = RC()
+		rich_console = rc()
 
 		rich_console.print("Please choose from the following menu:", style="bold red")
 		rich_console.print("1: Run AES128 Encryption")
@@ -73,14 +73,18 @@ class Console:
 		self.convert_to_cipher_blocks()  # Converts input to 2d list of blocks, 16 vals each, pads last block if needed
 
 		if menu_choice == 1:
-			block_mode_choice = int(input("Which block mode would you like to use? \n " + " 1: ECB Mode "))
+			block_mode_choice = int(input("Which block mode would you like to use? \n " + " 1: ECB Mode " + " 2: CBC Mode "))
 			if block_mode_choice == 1:
 				self.output = ecb(self.cipher_blocks, self.encryption_key)
+			elif block_mode_choice == 2:
+				self.output = cbc(self.cipher_blocks, self.encryption_key)
 
 		elif menu_choice == 2:
-			block_mode_choice = int(input("Which block mode would you like to use? \n " + " 1: ECB Mode "))
+			block_mode_choice = int(input("Which block mode would you like to use? \n " + " 1: ECB Mode " + " 2: CBC Mode "))
 			if block_mode_choice == 1:
 				self.output = ecb(self.cipher_blocks, self.encryption_key, enc=False)
+			elif block_mode_choice == 2:
+				self.output = cbc(self.cipher_blocks, self.encryption_key, enc=False)
 
 
 if __name__ == "__main__":
