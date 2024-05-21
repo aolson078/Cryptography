@@ -1,5 +1,5 @@
 # Cryptography
 Various cryptographic algorithms 
 
-# DO NOT USE FOR ACTUAL SECURITY/PRODUCTION, NOT CRYPTOGRAPHICALLY SECURE!!!!!!!!!!!!!!!!
+!toy implementations, not meant for actual security. 
 Written by Alex Olson
